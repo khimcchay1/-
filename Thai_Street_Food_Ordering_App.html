@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ร้านอาหารตามสั่ง - อร่อยจัดจ้านจานด่วน</title>
+
+  <!-- Google Fonts: Prompt -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Prompt', 'sans-serif'],
+          },
+          colors: {
+            spice: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              200: '#fed7aa',
+              500: '#f97316',
+              600: '#ea580c',
+              700: '#c2410c',
+            },
+            flame: {
+              500: '#ef4444',
+              600: '#dc2626',
+              700: '#b91c1c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Clean custom scrollbar for horizontal category scroller */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Subtle tap animations */
+    .tap-scale {
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .tap-scale:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body class="bg-stone-100 text-stone-800 font-sans min-h-screen pb-32 antialiased selection:bg-orange-500 selection:text-white">
+
+  <!-- Top App Navigation / Banner -->
+  <header class="bg-gradient-to-r from-red-600 via-orange-600 to-amber-600 text-white shadow-lg sticky top-0 z-40">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-white/20">
+          🍳
+        </div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight flex items-center gap-2">
+            ร้านอาหารตามสั่ง
+            <span class="text-[10px] bg-amber-400 text-stone-900 font-semibold px-2 py-0.5 rounded-full shadow-sm">เปิดบริการ</span>
+          </h1>
+          <p class="text-xs text-orange-100 font-light">คั่วหอมกระทะ ผัดสดใหม่ทุกจาน</p>
+        </div>
+      </div>
+
+      <!-- Quick Receipt Button -->
+      <button onclick="openCartModal()" class="relative p-2.5 rounded-xl bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20 tap-scale transition" aria-label="ดูตะกร้า">
+        <i class="fa-solid fa-cart-shopping text-base"></i>
+        <span id="nav-cart-badge" class="hidden absolute -top-1.5 -right-1.5 bg-yellow-400 text-stone-900 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-red-600">0</span>
+      </button>
+    </div>
+
+    <!-- Store Highlight Notice Banner -->
+    <div class="bg-black/20 backdrop-blur-md border-t border-white/10 px-4 py-2 text-center text-xs text-amber-200 flex items-center justify-center gap-2">
+      <i class="fa-solid fa-fire text-amber-300"></i>
+      <span><strong>เมนูกะเพราทางร้านผัดแห้ง</strong> (ชอบมีน้ำแจ้งได้) • เผ็ดน้อย-มาก สั่งได้ตามชอบ!</span>
+    </div>
+  </header>
+
+  <!-- Sticky Category Pills Navigation -->
+  <nav class="sticky top-[89px] z-30 bg-stone-100/95 backdrop-blur-md border-b border-stone-200 py-2.5 px-4">
+    <div class="max-w-2xl mx-auto flex gap-2 overflow-x-auto no-scrollbar">
+      <button onclick="scrollToCategory('sec-kaprao')" id="pill-kaprao" class="cat-pill active px-3.5 py-1.5 rounded-full text-xs font-semibold bg-red-600 text-white shadow-sm whitespace-nowrap tap-scale transition">
+        🌶️ กะเพรา & คั่วพริกเกลือ
+      </button>
+      <button onclick="scrollToCategory('sec-friedrice')" id="pill-friedrice" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-stone-700 border border-stone-300 whitespace-nowrap tap-scale transition">
+        🍚 ข้าวผัด
+      </button>
+      <button onclick="scrollToCategory('sec-noodle')" id="pill-noodle" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-stone-700 border border-stone-300 whitespace-nowrap tap-scale transition">
+        🍜 เมนูเส้น
+      </button>
+      <button onclick="scrollToCategory('sec-yum')" id="pill-yum" class="cat-pill px-3.5 py-1.5 rounded-full text-xs font-medium bg-white text-stone-700 border border-stone-300 whitespace-nowrap tap-scale transition">
+        🥗 เมนูยำ
+      </button>
+    </div>
+  </nav>
+
+  <!-- Menu Layout Container -->
+  <main class="max-w-2xl mx-auto px-4 py-5 space-y-7">
+
+    <!-- Category 1: กะเพรา & ผัดคั่วพริกเกลือ -->
+    <section id="sec-kaprao" class="scroll-mt-32">
+      <div class="flex items-center justify-between pb-2 mb-3 border-b-2 border-red-500">
+        <h2 class="text-base font-bold text-stone-900 flex items-center gap-2">
+          <span class="text-xl">🌶️</span> เมนูกะเพรา & ผัดคั่วพริกเกลือ
+        </h2>
+        <span class="text-[11px] text-stone-500 font-medium">สูตรแห้ง กลิ่นกระทะ</span>
+      </div>
+      <div id="grid-kaprao" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- Category 2: ข้าวผัด -->
+    <section id="sec-friedrice" class="scroll-mt-32">
+      <div class="flex items-center justify-between pb-2 mb-3 border-b-2 border-amber-500">
+        <h2 class="text-base font-bold text-stone-900 flex items-center gap-2">
+          <span class="text-xl">🍚</span> เมนูข้าวผัด
+        </h2>
+        <span class="text-[11px] text-stone-500 font-medium">ผัดเรียงเม็ดสวย หอมกรุ่น</span>
+      </div>
+      <div id="grid-friedrice" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- Category 3: เมนูเส้น -->
+    <section id="sec-noodle" class="scroll-mt-32">
+      <div class="flex items-center justify-between pb-2 mb-3 border-b-2 border-orange-500">
+        <h2 class="text-base font-bold text-stone-900 flex items-center gap-2">
+          <span class="text-xl">🍜</span> เมนูเส้น
+        </h2>
+        <span class="text-[11px] text-stone-500 font-medium">ขี้เมาเข้มข้น จัดจ้าน</span>
+      </div>
+      <div id="grid-noodle" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- Category 4: เมนูยำ -->
+    <section id="sec-yum" class="scroll-mt-32">
+      <div class="flex items-center justify-between pb-2 mb-3 border-b-2 border-pink-500">
+        <h2 class="text-base font-bold text-stone-900 flex items-center gap-2">
+          <span class="text-xl">🥗</span> เมนูยำ
+        </h2>
+        <span class="text-[11px] text-stone-500 font-medium">มะนาวสดแท้ รสเปรี้ยวแซ่บ</span>
+      </div>
+      <div id="grid-yum" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- Store Policy / Quality Guarantee Card -->
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-xs text-stone-600 flex items-start gap-3 shadow-sm">
+      <div class="w-8 h-8 rounded-full bg-amber-200 text-amber-800 flex items-center justify-center shrink-0 text-sm mt-0.5">
+        <i class="fa-solid fa-utensils"></i>
+      </div>
+      <div class="space-y-1">
+        <p class="font-bold text-stone-800">แจ้งคุณลูกค้า:</p>
+        <p>• สามารถกดเลือกเมนูเพื่อกำหนดระดับความเผ็ด และรายละเอียดพิเศษในแต่ละจานได้เลยครับ</p>
+        <p>• เพิ่มไข่ดาว +10 บาท (สามารถระบุไข่แดงสุกหรือไม่สุกได้ในช่องหมายเหตุ)</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Sticky Bottom Cart Floating Bar -->
+  <aside id="floating-cart" class="fixed bottom-4 left-4 right-4 z-40 max-w-lg mx-auto transition-all duration-300 transform translate-y-28 opacity-0 pointer-events-none">
+    <div class="bg-stone-900/95 backdrop-blur-md text-white p-3.5 rounded-2xl shadow-2xl border border-stone-700/80 flex items-center justify-between">
+      <div class="flex items-center gap-3 pl-1.5 cursor-pointer tap-scale" onclick="openCartModal()">
+        <div class="relative">
+          <div class="w-11 h-11 bg-gradient-to-tr from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-white text-lg shadow-md">
+            <i class="fa-solid fa-bag-shopping"></i>
+          </div>
+          <span id="float-cart-count" class="absolute -top-1 -right-1 bg-yellow-400 text-stone-900 text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center ring-2 ring-stone-900">0</span>
+        </div>
+        <div>
+          <p class="text-[11px] text-stone-400 font-light">ยอดรวมทั้งสิ้น</p>
+          <p class="text-lg font-bold text-emerald-400">฿<span id="float-cart-total">0</span></p>
+        </div>
+      </div>
+
+      <button onclick="openCartModal()" class="bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-semibold text-xs px-5 py-3 rounded-xl shadow-lg tap-scale transition flex items-center gap-2">
+        <span>ดูรายการที่สั่ง</span>
+        <i class="fa-solid fa-arrow-right text-[11px]"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Customization Modal (Spiciness, Dry/Sauce, Egg, Notes) -->
+  <div id="custom-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center hidden opacity-0 transition-opacity duration-200">
+    <div id="custom-modal-card" class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden transform translate-y-6 transition-transform duration-200">
+      
+      <!-- Modal Header -->
+      <div class="p-4 border-b border-stone-100 flex items-center justify-between bg-stone-50">
+        <div>
+          <h3 id="modal-dish-name" class="font-bold text-base text-stone-900">ชื่อเมนู</h3>
+          <p id="modal-dish-base-price" class="text-xs font-semibold text-red-600">฿0</p>
+        </div>
+        <button onclick="closeCustomModal()" class="w-8 h-8 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-600 flex items-center justify-center text-sm tap-scale transition">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Scrollable Body -->
+      <div class="p-5 overflow-y-auto space-y-4 text-xs">
+
+        <!-- 0. ขนาดจาน (ธรรมดา / พิเศษ +10 บาท) -->
+        <div>
+          <label class="block font-bold text-stone-700 mb-2">
+            ขนาดจาน <span class="text-red-500">*</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2" id="portion-selector">
+            <button type="button" onclick="setPortion('ธรรมดา', 0)" data-portion="ธรรมดา" class="portion-btn active py-2.5 px-3 rounded-xl border-2 border-red-500 bg-red-50/60 text-red-700 font-semibold text-left flex items-center justify-between transition">
+              <div>
+                <span class="block">🍽️ ธรรมดา</span>
+                <span class="text-[10px] text-stone-400 font-normal">ราคาปกติ</span>
+              </div>
+              <i class="fa-solid fa-circle-check text-red-600 text-xs"></i>
+            </button>
+            <button type="button" onclick="setPortion('พิเศษ', 10)" data-portion="พิเศษ" class="portion-btn py-2.5 px-3 rounded-xl border border-stone-200 text-left flex items-center justify-between hover:bg-stone-50 transition">
+              <div>
+                <span class="block">👑 พิเศษ</span>
+                <span class="text-[10px] text-amber-600 font-medium">+ ฿10</span>
+              </div>
+              <i class="fa-regular fa-circle text-stone-300 text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. ระดับความเผ็ด -->
+        <div>
+          <label class="block font-bold text-stone-700 mb-2">
+            ระดับความเผ็ด <span class="text-red-500">*</span>
+          </label>
+          <div class="grid grid-cols-2 gap-2" id="spicy-selector">
+            <button type="button" onclick="setSpiciness('ไม่เผ็ด')" data-spicy="ไม่เผ็ด" class="spicy-btn py-2.5 px-3 rounded-xl border border-stone-200 text-left flex items-center justify-between hover:bg-stone-50 transition">
+              <span>🌱 ไม่เผ็ด</span>
+              <i class="fa-regular fa-circle text-stone-300 text-xs"></i>
+            </button>
+            <button type="button" onclick="setSpiciness('เผ็ดน้อย')" data-spicy="เผ็ดน้อย" class="spicy-btn py-2.5 px-3 rounded-xl border border-stone-200 text-left flex items-center justify-between hover:bg-stone-50 transition">
+              <span>🌶️ เผ็ดน้อย</span>
+              <i class="fa-regular fa-circle text-stone-300 text-xs"></i>
+            </button>
+            <button type="button" onclick="setSpiciness('เผ็ดปกติ')" data-spicy="เผ็ดปกติ" class="spicy-btn active py-2.5 px-3 rounded-xl border-2 border-red-500 bg-red-50/60 text-red-700 font-semibold text-left flex items-center justify-between transition">
+              <span>🌶️🌶️ เผ็ดปกติ</span>
+              <i class="fa-solid fa-circle-check text-red-600 text-xs"></i>
+            </button>
+            <button type="button" onclick="setSpiciness('เผ็ดมาก')" data-spicy="เผ็ดมาก" class="spicy-btn py-2.5 px-3 rounded-xl border border-stone-200 text-left flex items-center justify-between hover:bg-stone-50 transition">
+              <span>🔥 เผ็ดมาก</span>
+              <i class="fa-regular fa-circle text-stone-300 text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. ลักษณะการผัด (เฉพาะเมนูกะเพรา) -->
+        <div id="sauce-selector-container">
+          <label class="block font-bold text-stone-700 mb-2">
+            ลักษณะการผัด
+          </label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" onclick="setStirStyle('ผัดแห้ง (สูตรเดิมร้าน)')" data-style="ผัดแห้ง (สูตรเดิมร้าน)" class="sauce-btn active py-2.5 px-3 rounded-xl border-2 border-red-500 bg-red-50/60 text-red-700 font-semibold text-left flex items-center justify-between transition">
+              <span>🍳 ผัดแห้งหอมกระทะ</span>
+              <i class="fa-solid fa-circle-check text-red-600 text-xs"></i>
+            </button>
+            <button type="button" onclick="setStirStyle('ชอบมีน้ำคลุกข้าว')" data-style="ชอบมีน้ำคลุกข้าว" class="sauce-btn py-2.5 px-3 rounded-xl border border-stone-200 text-left flex items-center justify-between hover:bg-stone-50 transition">
+              <span>🍲 ชอบมีน้ำคลุกข้าว</span>
+              <i class="fa-regular fa-circle text-stone-300 text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. ท็อปปิ้งไข่ดาว -->
+        <div class="border border-amber-200 bg-amber-50/60 rounded-xl p-3 flex items-center justify-between">
+          <label for="extra-egg-cb" class="flex items-center gap-2.5 cursor-pointer text-stone-800 font-medium select-none">
+            <input type="checkbox" id="extra-egg-cb" onchange="calculateModalCurrentPrice()" class="w-4 h-4 rounded text-red-600 focus:ring-red-500 accent-red-600">
+            <span>🍳 เพิ่มไข่ดาว</span>
+          </label>
+          <span class="font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full text-[11px]">+ ฿10</span>
+        </div>
+
+        <!-- 4. หมายเหตุคำขอพิเศษ -->
+        <div>
+          <label class="block font-bold text-stone-700 mb-1">
+            หมายเหตุเพิ่มเติม (ถ้ามี)
+          </label>
+          <input type="text" id="dish-note" placeholder="เช่น ไม่ใส่กระเทียม, ไข่ดาวไม่สุก, แยกพริกน้ำปลา" class="w-full text-xs px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-stone-50">
+        </div>
+
+      </div>
+
+      <!-- Modal Bottom Actions -->
+      <div class="p-4 border-t border-stone-100 bg-stone-50 flex items-center justify-between gap-3">
+        <div>
+          <span class="text-[11px] text-stone-500 block">ราคารวมจานนี้</span>
+          <span id="modal-calc-price" class="text-lg font-bold text-red-600">฿0</span>
+        </div>
+        <button onclick="confirmItemAddToCart()" class="flex-1 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-700 hover:to-orange-600 text-white font-semibold py-3 px-4 rounded-xl shadow-md tap-scale transition flex items-center justify-center gap-2 text-xs">
+          <i class="fa-solid fa-plus"></i>
+          <span>ใส่ลงตะกร้า</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Cart Summary Modal (Review & Export) -->
+  <div id="cart-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center hidden opacity-0 transition-opacity duration-200">
+    <div id="cart-modal-card" class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden transform translate-y-6 transition-transform duration-200">
+      
+      <!-- Cart Header -->
+      <div class="p-4 border-b border-stone-100 flex items-center justify-between bg-stone-50">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-lg bg-red-100 text-red-600 flex items-center justify-center text-xs">
+            <i class="fa-solid fa-receipt"></i>
+          </span>
+          <h3 class="font-bold text-base text-stone-900">สรุปรายการสั่งซื้อ</h3>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="clearCart()" class="text-xs text-stone-400 hover:text-red-500 transition">ล้างตะกร้า</button>
+          <button onclick="closeCartModal()" class="w-8 h-8 rounded-full bg-stone-200 hover:bg-stone-300 text-stone-600 flex items-center justify-center text-sm tap-scale transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cart Item List -->
+      <div id="cart-items-container" class="p-4 overflow-y-auto divide-y divide-stone-100 space-y-3 flex-1 text-xs">
+        <!-- Rendered items go here -->
+      </div>
+
+      <!-- Empty Cart Message -->
+      <div id="cart-empty-state" class="py-14 text-center text-stone-400 space-y-2 hidden">
+        <div class="text-4xl">🛒</div>
+        <p class="text-xs">ยังไม่มีรายการอาหารในตะกร้าครับ</p>
+      </div>
+
+      <!-- Customer Details Input (Optional) -->
+      <div class="px-4 py-2.5 bg-stone-50 border-t border-stone-100 grid grid-cols-2 gap-2 text-xs">
+        <div>
+          <label class="block text-stone-500 font-medium mb-1">ชื่อผู้สั่ง / เบอร์โทร</label>
+          <input type="text" id="input-customer-name" placeholder="ระบุชื่อลูกค้า" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-200 text-xs focus:outline-none focus:border-red-500 bg-white">
+        </div>
+        <div>
+          <label class="block text-stone-500 font-medium mb-1">โต๊ะ / รับกลับ / ที่อยู่</label>
+          <input type="text" id="input-customer-table" placeholder="เช่น โต๊ะ 2 หรือ ใส่กล่อง" class="w-full px-2.5 py-1.5 rounded-lg border border-stone-200 text-xs focus:outline-none focus:border-red-500 bg-white">
+        </div>
+      </div>
+
+      <!-- Cart Bottom Bar -->
+      <div class="p-4 border-t border-stone-200 bg-white space-y-3">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-stone-600 font-medium">ยอดชำระสุทธิ</span>
+          <span class="text-xl font-bold text-red-600">฿<span id="cart-modal-total">0</span></span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="copyOrderSummary()" class="w-full bg-stone-800 hover:bg-stone-900 text-white font-medium py-2.5 px-3 rounded-xl tap-scale transition flex items-center justify-center gap-1.5 text-xs shadow">
+            <i class="fa-regular fa-copy"></i>
+            <span>คัดลอกรายการ</span>
+          </button>
+          <button onclick="sendOrderViaLine()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 px-3 rounded-xl tap-scale transition flex items-center justify-center gap-1.5 text-xs shadow">
+            <i class="fa-brands fa-line text-sm"></i>
+            <span>ส่งสั่งทาง LINE</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast-notify" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-stone-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-2xl pointer-events-none opacity-0 -translate-y-4 transition-all duration-200 flex items-center gap-2">
+    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toast-text">สำเร็จ</span>
+  </div>
+
+  <!-- Application Logic -->
+  <script>
+    // 1. Comprehensive Menu Database
+    const restaurantCatalog = [
+      // หมวด 1: กะเพรา & คั่วพริกเกลือ
+      { id: 1, name: "กะเพราหมูสับ", price: 50, cat: "kaprao", isKaprao: true, icon: "🍳", desc: "หมูสับคั่วใบกะเพรา รสจัดจ้านกลิ่นกระทะ" },
+      { id: 2, name: "กะเพราหมูชิ้น", price: 50, cat: "kaprao", isKaprao: true, icon: "🥩", desc: "หมูชิ้นหมักนุ่ม ผัดพริกกะเพราหอมฟุ้ง" },
+      { id: 3, name: "กะเพราเครื่องใน", price: 50, cat: "kaprao", isKaprao: true, icon: "🫀", desc: "เครื่องในสดล้างสะอาด ไม่คาว ผัดเผ็ดร้อน" },
+      { id: 4, name: "กะเพราไก่", price: 50, cat: "kaprao", isKaprao: true, icon: "🍗", desc: "เนื้อไก่สดนุ่ม ผัดพริกสดแห้งเข้าเนื้อ" },
+      { id: 5, name: "กะเพราทะเล", price: 70, cat: "kaprao", isKaprao: true, icon: "🦐", desc: "กุ้งสด หมึกสด เครื่องทะเลจัดเต็ม" },
+      { id: 6, name: "กะเพราไข่เยี่ยวม้าหมูสับ", price: 60, cat: "kaprao", isKaprao: true, icon: "🥚", desc: "ไข่เยี่ยวม้าทอดกรอบ ผัดหมูสับกะเพราเด็ด" },
+      { id: 7, name: "หมูชิ้นคั่วพริกเกลือ", price: 50, cat: "kaprao", isKaprao: false, icon: "🌶️", desc: "หมูชิ้นคั่วแห้ง กระเทียมพริกเกลือเค็มนิดเผ็ดหน่อย" },
+      { id: 8, name: "หมูสับคั่วพริกเกลือ", price: 50, cat: "kaprao", isKaprao: false, icon: "🧂", desc: "หมูสับคั่วไฟแรง พริกกระเทียมเกลือหอมกรอบ" },
+      { id: 9, name: "ไก่คั่วพริกเกลือ", price: 50, cat: "kaprao", isKaprao: false, icon: "🧄", desc: "เนื้อไก่คั่วกรอบนอกนุ่มใน คั่วสมุนไพรพริกเกลือ" },
+      { id: 10, name: "ทะเลคั่วพริกเกลือ", price: 70, cat: "kaprao", isKaprao: false, icon: "🦑", desc: "กุ้งและหมึกสด คั่วพริกกระเทียมคั่วเกลือสูตรเด็ด" },
+      { id: 11, name: "ข้าวไข่เจียวหมูสับ", price: 40, cat: "kaprao", isKaprao: false, icon: "🍳", desc: "ไข่เจียวทอดฟูกรอบ ไม่อมน้ำมัน พร้อมหมูสับ" },
+
+      // หมวด 2: ข้าวผัด
+      { id: 12, name: "ข้าวผัดหมู", price: 50, cat: "friedrice", isKaprao: false, icon: "🍚", desc: "ข้าวหอมมะลิผัดร่วนเคลือบไข่ หมูนุ่มกลิ่นหอมกระทะ" },
+      { id: 13, name: "ข้าวผัดทะเล", price: 70, cat: "friedrice", isKaprao: false, icon: "🍤", desc: "ข้าวผัดเม็ดร่วน ใส่กุ้งและหมึกสด แนบมะนาวแตงกวา" },
+
+      // หมวด 3: เมนูเส้น
+      { id: 14, name: "มาม่าผัดขี้เมาหมู", price: 50, cat: "noodle", isKaprao: false, icon: "🍜", desc: "เส้นมาม่าลวกนุ่มหนึบ ผัดขี้เมาใบกะเพราพริกไทยอ่อน" },
+      { id: 15, name: "มาม่าผัดขี้เมาทะเล", price: 70, cat: "noodle", icon: "🦑", desc: "เส้นมาม่าผัดขี้เมาเครื่องทะเล เผ็ดร้อนถึงใจ" },
+
+      // หมวด 4: เมนูยำ
+      { id: 16, name: "ยำวุ้นเส้นหมูสับหมูยอ", price: 50, cat: "yum", isKaprao: false, icon: "🥗", desc: "วุ้นเส้นเหนียวนุ่ม ยำหมูสับหมูยออุบลแท้ มะนาวคั้นสด" },
+      { id: 17, name: "ยำมาม่าหมูสับหมูยอ", price: 50, cat: "yum", isKaprao: false, icon: "🌶️", desc: "มาม่าคลุกเคล้าน้ำยำรสจัดจ้าน หมูยอและหมูสับแน่นๆ" },
+      { id: 18, name: "ยำทะเลรวมหมูสับหมูยอ", price: 70, cat: "yum", isKaprao: false, icon: "🐙", desc: "รวมมิตรกุ้ง หมึก หมูสับ หมูยอ น้ำยำเปรี้ยวแซ่บจี๊ดจ๊าด" }
+    ];
+
+    // State
+    let cart = [];
+    let activeItem = null;
+    let selectedPortion = "ธรรมดา";
+    let selectedPortionExtraPrice = 0;
+    let selectedSpicy = "เผ็ดปกติ";
+    let selectedStirStyle = "ผัดแห้ง (สูตรเดิมร้าน)";
+
+    // Initial Render
+    window.addEventListener('DOMContentLoaded', () => {
+      renderMenuCards();
+      refreshCartUI();
+    });
+
+    // Render Menu Items by Category
+    function renderMenuCards() {
+      const containerKaprao = document.getElementById('grid-kaprao');
+      const containerFriedrice = document.getElementById('grid-friedrice');
+      const containerNoodle = document.getElementById('grid-noodle');
+      const containerYum = document.getElementById('grid-yum');
+
+      restaurantCatalog.forEach(dish => {
+        const cardHtml = `
+          <div class="bg-white rounded-2xl p-3.5 border border-stone-200/90 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div class="flex items-start gap-3">
+              <div class="w-11 h-11 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center text-xl shrink-0">
+                ${dish.icon}
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="font-bold text-xs sm:text-sm text-stone-900 truncate">${dish.name}</h3>
+                <p class="text-[11px] text-stone-500 line-clamp-1 mt-0.5">${dish.desc}</p>
+                <div class="mt-1 text-sm font-bold text-red-600">฿${dish.price}</div>
+              </div>
+            </div>
+            <div class="mt-3 pt-2 border-t border-stone-100 flex justify-end">
+              <button onclick="openCustomizerModal(${dish.id})" class="w-full sm:w-auto bg-stone-100 hover:bg-red-600 hover:text-white text-stone-800 text-xs font-semibold px-3.5 py-1.5 rounded-xl tap-scale transition flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-plus text-[10px]"></i>
+                <span>สั่งจานนี้</span>
+              </button>
+            </div>
+          </div>
+        `;
+
+        if (dish.cat === 'kaprao') containerKaprao.innerHTML += cardHtml;
+        else if (dish.cat === 'friedrice') containerFriedrice.innerHTML += cardHtml;
+        else if (dish.cat === 'noodle') containerNoodle.innerHTML += cardHtml;
+        else if (dish.cat === 'yum') containerYum.innerHTML += cardHtml;
+      });
+    }
+
+    // Category Quick Navigation Scroll
+    function scrollToCategory(secId) {
+      const el = document.getElementById(secId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    // Modal: Open Customizer
+    function openCustomizerModal(dishId) {
+      activeItem = restaurantCatalog.find(d => d.id === dishId);
+      if (!activeItem) return;
+
+      document.getElementById('modal-dish-name').innerText = activeItem.name;
+      document.getElementById('modal-dish-base-price').innerText = `฿${activeItem.price}`;
+      document.getElementById('extra-egg-cb').checked = false;
+      document.getElementById('dish-note').value = "";
+
+      // Hide stir-fry style options if it's not a Kaprao dish
+      const sauceBox = document.getElementById('sauce-selector-container');
+      if (activeItem.isKaprao) {
+        sauceBox.style.display = 'block';
+      } else {
+        sauceBox.style.display = 'none';
+      }
+
+      // Reset Defaults
+      setPortion('ธรรมดา', 0);
+      setSpiciness('เผ็ดปกติ');
+      setStirStyle('ผัดแห้ง (สูตรเดิมร้าน)');
+      calculateModalCurrentPrice();
+
+      const modal = document.getElementById('custom-modal');
+      const card = document.getElementById('custom-modal-card');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('translate-y-6');
+      }, 10);
+    }
+
+    function setPortion(portion, extraPrice) {
+      selectedPortion = portion;
+      selectedPortionExtraPrice = extraPrice;
+      document.querySelectorAll('.portion-btn').forEach(btn => {
+        const matches = btn.getAttribute('data-portion') === portion;
+        btn.classList.toggle('active', matches);
+        btn.classList.toggle('border-2', matches);
+        btn.classList.toggle('border-red-500', matches);
+        btn.classList.toggle('bg-red-50/60', matches);
+        btn.classList.toggle('text-red-700', matches);
+        btn.classList.toggle('font-semibold', matches);
+
+        const icon = btn.querySelector('i');
+        if (matches) {
+          icon.className = "fa-solid fa-circle-check text-red-600 text-xs";
+        } else {
+          icon.className = "fa-regular fa-circle text-stone-300 text-xs";
+        }
+      });
+      calculateModalCurrentPrice();
+    }
+
+    function closeCustomModal() {
+      const modal = document.getElementById('custom-modal');
+      const card = document.getElementById('custom-modal-card');
+      modal.classList.add('opacity-0');
+      card.classList.add('translate-y-6');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    function setSpiciness(level) {
+      selectedSpicy = level;
+      document.querySelectorAll('.spicy-btn').forEach(btn => {
+        const matches = btn.getAttribute('data-spicy') === level;
+        btn.classList.toggle('active', matches);
+        btn.classList.toggle('border-2', matches);
+        btn.classList.toggle('border-red-500', matches);
+        btn.classList.toggle('bg-red-50/60', matches);
+        btn.classList.toggle('text-red-700', matches);
+        btn.classList.toggle('font-semibold', matches);
+
+        const icon = btn.querySelector('i');
+        if (matches) {
+          icon.className = "fa-solid fa-circle-check text-red-600 text-xs";
+        } else {
+          icon.className = "fa-regular fa-circle text-stone-300 text-xs";
+        }
+      });
+    }
+
+    function setStirStyle(style) {
+      selectedStirStyle = style;
+      document.querySelectorAll('.sauce-btn').forEach(btn => {
+        const matches = btn.getAttribute('data-style') === style;
+        btn.classList.toggle('active', matches);
+        btn.classList.toggle('border-2', matches);
+        btn.classList.toggle('border-red-500', matches);
+        btn.classList.toggle('bg-red-50/60', matches);
+        btn.classList.toggle('text-red-700', matches);
+        btn.classList.toggle('font-semibold', matches);
+
+        const icon = btn.querySelector('i');
+        if (matches) {
+          icon.className = "fa-solid fa-circle-check text-red-600 text-xs";
+        } else {
+          icon.className = "fa-regular fa-circle text-stone-300 text-xs";
+        }
+      });
+    }
+
+    function calculateModalCurrentPrice() {
+      if (!activeItem) return 0;
+      let total = activeItem.price + selectedPortionExtraPrice;
+      const isEgg = document.getElementById('extra-egg-cb').checked;
+      if (isEgg) total += 10;
+      document.getElementById('modal-calc-price').innerText = `฿${total}`;
+      return total;
+    }
+
+    function confirmItemAddToCart() {
+      if (!activeItem) return;
+      const hasEgg = document.getElementById('extra-egg-cb').checked;
+      const note = document.getElementById('dish-note').value.trim();
+      const unitTotal = calculateModalCurrentPrice();
+
+      const orderItem = {
+        uniqueKey: Date.now() + Math.random(),
+        dishId: activeItem.id,
+        name: activeItem.name,
+        unitPrice: unitTotal,
+        basePrice: activeItem.price,
+        portion: selectedPortion,
+        portionExtra: selectedPortionExtraPrice,
+        spicy: selectedSpicy,
+        stirStyle: activeItem.isKaprao ? selectedStirStyle : null,
+        hasEgg: hasEgg,
+        note: note,
+        qty: 1
+      };
+
+      cart.push(orderItem);
+      closeCustomModal();
+      refreshCartUI();
+      triggerToast(`เพิ่ม "${activeItem.name} (${selectedPortion})" ในตะกร้าแล้ว`);
+    }
+
+    // Cart Updates & UI Sync
+    function refreshCartUI() {
+      const totalCount = cart.reduce((sum, item) => sum + item.qty, 0);
+      const totalPrice = cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+
+      // Floating bottom bar update
+      document.getElementById('float-cart-count').innerText = totalCount;
+      document.getElementById('float-cart-total').innerText = totalPrice.toLocaleString();
+      document.getElementById('cart-modal-total').innerText = totalPrice.toLocaleString();
+
+      // Top header badge
+      const headerBadge = document.getElementById('nav-cart-badge');
+      if (totalCount > 0) {
+        headerBadge.classList.remove('hidden');
+        headerBadge.innerText = totalCount;
+      } else {
+        headerBadge.classList.add('hidden');
+      }
+
+      // Floating bar show / hide
+      const floatBar = document.getElementById('floating-cart');
+      if (totalCount > 0) {
+        floatBar.classList.remove('translate-y-28', 'opacity-0', 'pointer-events-none');
+      } else {
+        floatBar.classList.add('translate-y-28', 'opacity-0', 'pointer-events-none');
+      }
+
+      renderCartItemList();
+    }
+
+    function renderCartItemList() {
+      const container = document.getElementById('cart-items-container');
+      const emptyBox = document.getElementById('cart-empty-state');
+
+      if (cart.length === 0) {
+        container.innerHTML = "";
+        emptyBox.classList.remove('hidden');
+        return;
+      }
+
+      emptyBox.classList.add('hidden');
+      container.innerHTML = cart.map((item, index) => {
+        let details = [];
+        details.push(`ขนาด: ${item.portion}`);
+        if (item.spicy) details.push(`เผ็ด: ${item.spicy}`);
+        if (item.stirStyle) details.push(item.stirStyle);
+        if (item.hasEgg) details.push("ไข่ดาว (+10)");
+        if (item.note) details.push(`โน้ต: "${item.note}"`);
+
+        return `
+          <div class="pt-3 pb-2 flex items-start justify-between gap-2">
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-stone-900">${item.name}</span>
+                <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded ${item.portion === 'พิเศษ' ? 'bg-amber-100 text-amber-800' : 'bg-stone-100 text-stone-600'}">${item.portion}</span>
+                <span class="font-semibold text-red-600">฿${item.unitPrice * item.qty}</span>
+              </div>
+              <p class="text-[11px] text-stone-500 mt-0.5 leading-snug">
+                ${details.join(' • ')}
+              </p>
+            </div>
+
+            <!-- Qty Stepper -->
+            <div class="flex items-center gap-2 bg-stone-100 rounded-xl p-1 shrink-0">
+              <button onclick="updateItemQuantity(${index}, -1)" class="w-6 h-6 rounded-lg bg-white shadow-sm flex items-center justify-center text-stone-700 hover:bg-stone-200 text-xs tap-scale">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span class="font-bold w-4 text-center text-xs">${item.qty}</span>
+              <button onclick="updateItemQuantity(${index}, 1)" class="w-6 h-6 rounded-lg bg-white shadow-sm flex items-center justify-center text-stone-700 hover:bg-stone-200 text-xs tap-scale">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateItemQuantity(index, diff) {
+      cart[index].qty += diff;
+      if (cart[index].qty <= 0) {
+        cart.splice(index, 1);
+      }
+      refreshCartUI();
+    }
+
+    function clearCart() {
+      if (cart.length === 0) return;
+      cart = [];
+      refreshCartUI();
+      closeCartModal();
+      triggerToast("ล้างรายการในตะกร้าทั้งหมดแล้ว");
+    }
+
+    function openCartModal() {
+      const modal = document.getElementById('cart-modal');
+      const card = document.getElementById('cart-modal-card');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('translate-y-6');
+      }, 10);
+    }
+
+    function closeCartModal() {
+      const modal = document.getElementById('cart-modal');
+      const card = document.getElementById('cart-modal-card');
+      modal.classList.add('opacity-0');
+      card.classList.add('translate-y-6');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    // Build Formatted Text Receipt
+    function buildOrderReceiptText() {
+      if (cart.length === 0) return "";
+      const custName = document.getElementById('input-customer-name').value.trim() || "ไม่ระบุชื่อ";
+      const custTable = document.getElementById('input-customer-table').value.trim() || "ไม่ระบุ";
+      const totalAmount = cart.reduce((sum, item) => sum + (item.unitPrice * item.qty), 0);
+
+      let txt = `📋 รายการสั่งอาหาร: ร้านอาหารตามสั่ง\n`;
+      txt += `👤 ผู้สั่ง: ${custName}\n`;
+      txt += `📍 จุดรับ/โต๊ะ: ${custTable}\n`;
+      txt += `---------------------------------\n`;
+
+      cart.forEach((item, idx) => {
+        txt += `${idx + 1}. ${item.name} (${item.portion}) x${item.qty} = ${item.unitPrice * item.qty} บ.\n`;
+        let opts = [];
+        if (item.spicy) opts.push(item.spicy);
+        if (item.stirStyle) opts.push(item.stirStyle);
+        if (item.hasEgg) opts.push("เพิ่มไข่ดาว");
+        if (item.note) opts.push(`โน้ต: ${item.note}`);
+        if (opts.length > 0) {
+          txt += `   └ [${opts.join(', ')}]\n`;
+        }
+      });
+
+      txt += `---------------------------------\n`;
+      txt += `💰 ยอดรวมทั้งสิ้น: ${totalAmount} บาท`;
+      return txt;
+    }
+
+    function copyOrderSummary() {
+      if (cart.length === 0) {
+        triggerToast("ยังไม่มีรายการอาหารในตะกร้าครับ");
+        return;
+      }
+      const receipt = buildOrderReceiptText();
+      
+      // Iframe fallback copy
+      const tempArea = document.createElement("textarea");
+      tempArea.value = receipt;
+      document.body.appendChild(tempArea);
+      tempArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(tempArea);
+
+      triggerToast("คัดลอกรายการสั่งซื้อแล้ว พร้อมวางในแชท!");
+    }
+
+    function sendOrderViaLine() {
+      if (cart.length === 0) {
+        triggerToast("ยังไม่มีรายการอาหารในตะกร้าครับ");
+        return;
+      }
+      const receipt = buildOrderReceiptText();
+      const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(receipt)}`;
+      window.open(lineUrl, '_blank');
+    }
+
+    function triggerToast(text) {
+      const toast = document.getElementById('toast-notify');
+      document.getElementById('toast-text').innerText = text;
+      toast.classList.remove('opacity-0', '-translate-y-4');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-4');
+      }, 2500);
+    }
+  </script>
+</body>
+</html>
